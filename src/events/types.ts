@@ -73,9 +73,6 @@ export type MemoryBankEventMap = {
 
 export type MemoryBankEventName = keyof MemoryBankEventMap;
 
-export type MemoryBusEventMap = MemoryBankEventMap;
-export type MemoryBusEventName = MemoryBankEventName;
-
 export const EVENT_SCHEMAS: {
   [K in MemoryBankEventName]: z.ZodType<MemoryBankEventMap[K]>;
 } = {

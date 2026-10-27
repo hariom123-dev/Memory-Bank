@@ -201,5 +201,3 @@ export class MemoryBankDaemon {
     return result;
   }
 }
-
-export { MemoryBankDaemon as MemoryBusDaemon };

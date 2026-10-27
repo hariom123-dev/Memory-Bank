@@ -180,5 +180,3 @@ export function createMemoryBankMcpServer(options: McpServerOptions = {}): {
 
   return { server, handleToolCall };
 }
-
-export { createMemoryBankMcpServer as createMemoryBusMcpServer };
