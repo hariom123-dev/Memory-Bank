@@ -1,0 +1,10 @@
+node_modules/
+dist/
+*.sqlite*
+*.log
+.DS_Store
+Thumbs.db
+
+# Agent skills cache (zero skill bleed)
+.agents/
+skills-lock.json
