@@ -1,5 +1,5 @@
 /**
- * Core type definitions for the Memory Bus daemon lifecycle,
+ * Core type definitions for the Memory Bank daemon lifecycle,
  * dependency injection, and graceful shutdown orchestration.
  */
 

@@ -18,7 +18,7 @@ export interface McpServerOptions {
   logger?: ILogger;
 }
 
-export function createMemoryBusMcpServer(options: McpServerOptions = {}): {
+export function createMemoryBankMcpServer(options: McpServerOptions = {}): {
   server: Server;
   handleToolCall: (name: string, args: Record<string, unknown>) => Promise<{ content: Array<{ type: string; text: string }> }>;
 } {
@@ -30,7 +30,7 @@ export function createMemoryBusMcpServer(options: McpServerOptions = {}): {
 
   const server = new Server(
     {
-      name: "memory-bus-mcp",
+      name: "memory-bank-mcp",
       version: "0.1.0",
     },
     {
@@ -180,3 +180,5 @@ export function createMemoryBusMcpServer(options: McpServerOptions = {}): {
 
   return { server, handleToolCall };
 }
+
+export { createMemoryBankMcpServer as createMemoryBusMcpServer };

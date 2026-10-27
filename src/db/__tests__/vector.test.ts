@@ -12,7 +12,7 @@ describe("Phase 3: Local Vector Embedding Engine", () => {
 
   it("computes normalized vector embeddings", async () => {
     const engine = new VectorEmbeddingEngine({ useMockFallback: true });
-    const embedding = await engine.embed("How does authentication work in Memory Bus?");
+    const embedding = await engine.embed("How does authentication work in Memory Bank?");
 
     expect(Array.isArray(embedding)).toBe(true);
     expect(embedding.length).toBe(384);

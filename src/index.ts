@@ -1,5 +1,5 @@
 /**
- * Memory Bus - Local Agent Swarm Operating System
+ * Memory Bank - Local Agent Swarm Operating System
  * Root Barrel Export across all 15 Phases
  */
 

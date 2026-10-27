@@ -35,7 +35,7 @@ describe("Phase 10: The Local Terminal UI (TUI) Monitor", () => {
 
     const snapshot = monitor.renderSnapshot();
 
-    expect(snapshot).toContain("MEMORY BUS - AGENT SWARM OS MONITOR");
+    expect(snapshot).toContain("MEMORY BANK - AGENT SWARM OS MONITOR");
     expect(snapshot).toContain("[Daemon State]:     LISTENING");
     expect(snapshot).toContain("MEMORY_INGESTED");
     expect(snapshot).toContain("src/auth.ts - Implemented JWT Auth");

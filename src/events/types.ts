@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * Zod schemas for runtime validation of Memory Bus event payloads
+ * Zod schemas for runtime validation of Memory Bank event payloads
  */
 
 export const FileChangedPayloadSchema = z.object({
@@ -61,9 +61,9 @@ export const BranchChangedPayloadSchema = z.object({
 export type BranchChangedPayload = z.infer<typeof BranchChangedPayloadSchema>;
 
 /**
- * Standard Event-to-Payload mapping for the Memory Bus architecture
+ * Standard Event-to-Payload mapping for the Memory Bank architecture
  */
-export type MemoryBusEventMap = {
+export type MemoryBankEventMap = {
   FILE_CHANGED: FileChangedPayload;
   MEMORY_INGESTED: MemoryIngestedPayload;
   CONTEXT_REQUESTED: ContextRequestedPayload;
@@ -71,10 +71,13 @@ export type MemoryBusEventMap = {
   BRANCH_CHANGED: BranchChangedPayload;
 };
 
-export type MemoryBusEventName = keyof MemoryBusEventMap;
+export type MemoryBankEventName = keyof MemoryBankEventMap;
+
+export type MemoryBusEventMap = MemoryBankEventMap;
+export type MemoryBusEventName = MemoryBankEventName;
 
 export const EVENT_SCHEMAS: {
-  [K in MemoryBusEventName]: z.ZodType<MemoryBusEventMap[K]>;
+  [K in MemoryBankEventName]: z.ZodType<MemoryBankEventMap[K]>;
 } = {
   FILE_CHANGED: FileChangedPayloadSchema,
   MEMORY_INGESTED: MemoryIngestedPayloadSchema,

@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-import { MemoryBusDaemon } from "../daemon/daemon.js";
+import { MemoryBankDaemon } from "../daemon/daemon.js";
 import { DaemonProcessManager } from "./daemonize.js";
 import { TerminalMonitorDashboard } from "./monitor.js";
 import { TypedEventBus } from "../events/bus.js";
-import type { MemoryBusEventMap } from "../events/types.js";
-import { createMemoryBusMcpServer } from "../mcp/server.js";
+import type { MemoryBankEventMap } from "../events/types.js";
+import { createMemoryBankMcpServer } from "../mcp/server.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
 const args = process.argv.slice(2);
@@ -18,15 +18,15 @@ async function main() {
       if (isDetached) {
         const result = manager.startDaemon(process.argv[1] ?? "", ["run"]);
         if (result.status === "already_running") {
-          console.log(`Memory Bus daemon is already running (PID: ${result.pid}).`);
+          console.log(`Memory Bank daemon is already running (PID: ${result.pid}).`);
         } else {
-          console.log(`Memory Bus daemon started in background (PID: ${result.pid}).`);
+          console.log(`Memory Bank daemon started in background (PID: ${result.pid}).`);
         }
       } else {
-        console.log("Starting Memory Bus daemon in foreground...");
-        const daemon = new MemoryBusDaemon({ autoBindSignals: true });
+        console.log("Starting Memory Bank daemon in foreground...");
+        const daemon = new MemoryBankDaemon({ autoBindSignals: true });
         await daemon.start();
-        console.log("Memory Bus daemon running. Press Ctrl+C to terminate.");
+        console.log("Memory Bank daemon running. Press Ctrl+C to terminate.");
       }
       break;
     }
@@ -34,9 +34,9 @@ async function main() {
     case "stop": {
       const result = manager.stopDaemon();
       if (result.status === "stopped") {
-        console.log(`Memory Bus daemon (PID: ${result.pid}) stopped successfully.`);
+        console.log(`Memory Bank daemon (PID: ${result.pid}) stopped successfully.`);
       } else {
-        console.log("Memory Bus daemon is not running.");
+        console.log("Memory Bank daemon is not running.");
       }
       break;
     }
@@ -44,15 +44,15 @@ async function main() {
     case "status": {
       const status = manager.statusDaemon();
       if (status.running) {
-        console.log(`Memory Bus daemon is RUNNING (PID: ${status.pid}).`);
+        console.log(`Memory Bank daemon is RUNNING (PID: ${status.pid}).`);
       } else {
-        console.log("Memory Bus daemon is STOPPED.");
+        console.log("Memory Bank daemon is STOPPED.");
       }
       break;
     }
 
     case "monitor": {
-      const bus = new TypedEventBus<MemoryBusEventMap>();
+      const bus = new TypedEventBus<MemoryBankEventMap>();
       const monitor = new TerminalMonitorDashboard({ bus });
       monitor.start();
       console.clear();
@@ -61,7 +61,7 @@ async function main() {
     }
 
     case "mcp": {
-      const { server } = createMemoryBusMcpServer();
+      const { server } = createMemoryBankMcpServer();
       const transport = new StdioServerTransport();
       await server.connect(transport);
       break;
@@ -70,16 +70,16 @@ async function main() {
     case "version":
     case "--version":
     case "-v": {
-      console.log("memory-bus v0.1.0");
+      console.log("memory-bank v0.1.0");
       break;
     }
 
     default: {
       console.log(`
-Memory Bus - Local Agent Swarm Operating System
+Memory Bank - Local Agent Swarm Operating System
 
 Usage:
-  memory-bus <command> [options]
+  memory-bank <command> [options]
 
 Commands:
   start [--daemon]   Start the daemon in foreground or detached background

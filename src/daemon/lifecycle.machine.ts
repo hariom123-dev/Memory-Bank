@@ -54,7 +54,7 @@ export const daemonMachine = setup({
     }),
   },
 }).createMachine({
-  id: "memoryBusDaemon",
+  id: "memoryBankDaemon",
   initial: "INITIALIZING",
   context: initialDaemonContext,
   states: {

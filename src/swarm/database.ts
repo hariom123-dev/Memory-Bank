@@ -18,7 +18,7 @@ export class SwarmDatabase implements ITransactionalResource {
     if (options.existingDb) {
       this.db = options.existingDb;
     } else {
-      const dbPath = options.inMemory ? ":memory:" : options.dbPath ?? "memory-bus.sqlite";
+      const dbPath = options.inMemory ? ":memory:" : options.dbPath ?? "memory-bank.sqlite";
       this.db = new Database(dbPath);
     }
 

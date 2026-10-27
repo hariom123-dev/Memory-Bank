@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from "vitest";
-import { MemoryBusDaemon } from "../daemon.js";
+import { MemoryBankDaemon } from "../daemon.js";
 import type { ITransactionalResource, ILogger } from "../types.js";
 import { TOKENS, ServiceContainer } from "../container.js";
 
-describe("MemoryBusDaemon Orchestration", () => {
+describe("MemoryBankDaemon Orchestration", () => {
   const silentLogger: ILogger = {
     info: vi.fn(),
     warn: vi.fn(),
@@ -15,7 +15,7 @@ describe("MemoryBusDaemon Orchestration", () => {
     const container = new ServiceContainer();
     container.registerInstance(TOKENS.Logger, silentLogger);
 
-    const daemon = new MemoryBusDaemon({ container });
+    const daemon = new MemoryBankDaemon({ container });
     expect(daemon.getState()).toBe("INITIALIZING");
 
     await daemon.start();
@@ -29,7 +29,7 @@ describe("MemoryBusDaemon Orchestration", () => {
     const container = new ServiceContainer();
     container.registerInstance(TOKENS.Logger, silentLogger);
 
-    const daemon = new MemoryBusDaemon({ container });
+    const daemon = new MemoryBankDaemon({ container });
     await daemon.start();
 
     let stateDuringOperation = "";
@@ -52,7 +52,7 @@ describe("MemoryBusDaemon Orchestration", () => {
     const container = new ServiceContainer();
     container.registerInstance(TOKENS.Logger, silentLogger);
 
-    const daemon = new MemoryBusDaemon({ container });
+    const daemon = new MemoryBankDaemon({ container });
     await daemon.start();
 
     let stateDuringOperation = "";
@@ -75,7 +75,7 @@ describe("MemoryBusDaemon Orchestration", () => {
     const container = new ServiceContainer();
     container.registerInstance(TOKENS.Logger, silentLogger);
 
-    const daemon = new MemoryBusDaemon({ container });
+    const daemon = new MemoryBankDaemon({ container });
     await daemon.start();
 
     const failingOperation = vi.fn().mockRejectedValue(new Error("Disk I/O error"));
@@ -94,7 +94,7 @@ describe("MemoryBusDaemon Orchestration", () => {
     const container = new ServiceContainer();
     container.registerInstance(TOKENS.Logger, silentLogger);
 
-    const daemon = new MemoryBusDaemon({ container });
+    const daemon = new MemoryBankDaemon({ container });
 
     const mockDb: ITransactionalResource = {
       name: "sqlite-daemon-db",
@@ -119,7 +119,7 @@ describe("MemoryBusDaemon Orchestration", () => {
     const container = new ServiceContainer();
     container.registerInstance(TOKENS.Logger, silentLogger);
 
-    const daemon = new MemoryBusDaemon({ container });
+    const daemon = new MemoryBankDaemon({ container });
     // Not started yet (INITIALIZING)
     await expect(daemon.ingestMemory("s1", "f1", async () => "ok")).rejects.toThrow(
       "Cannot ingest memory: daemon is in 'INITIALIZING' state, must be 'LISTENING'."

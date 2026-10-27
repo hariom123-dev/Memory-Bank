@@ -133,7 +133,7 @@ export class TerminalMonitorDashboard {
 
     const lines: string[] = [
       "==================================================================",
-      "             MEMORY BUS - AGENT SWARM OS MONITOR                  ",
+      "             MEMORY BANK - AGENT SWARM OS MONITOR                 ",
       "==================================================================",
       `[Daemon State]:     ${metrics.daemonState}`,
       `[Database Size]:    ${dbSizeKb} KB | [Decisions]: ${metrics.totalDecisions} | [Snapshots]: ${metrics.totalSnapshots}`,

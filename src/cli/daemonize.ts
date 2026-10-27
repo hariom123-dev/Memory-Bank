@@ -12,7 +12,7 @@ export class DaemonProcessManager {
 
   constructor(options: DaemonizeOptions = {}) {
     this.pidFilePath =
-      options.pidFilePath ?? join(homedir(), ".memory-bus", "daemon.pid");
+      options.pidFilePath ?? join(homedir(), ".memory-bank", "daemon.pid");
   }
 
   getPidFilePath(): string {

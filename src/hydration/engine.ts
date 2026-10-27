@@ -48,7 +48,7 @@ export class ContextHydrationEngine {
 
     // 1. Header (reserved ~50 tokens)
     const header = [
-      `# Memory Bus Hydrated Context`,
+      `# Memory Bank Hydrated Context`,
       `**Query:** \`${query}\` | **Token Budget:** ${budget}`,
       "",
     ].join("\n");

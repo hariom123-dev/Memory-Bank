@@ -14,7 +14,7 @@ describe("Phase 15: Final NPM Packaging & Build", () => {
     };
 
     expect(pkg.type).toBe("module");
-    expect(pkg.bin["memory-bus"]).toBe("./dist/cli/index.js");
+    expect(pkg.bin["memory-bank"]).toBe("./dist/cli/index.js");
     expect(pkg.engines["node"]).toBe(">=20.0.0");
   });
 

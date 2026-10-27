@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { createMemoryBusMcpServer } from "../server.js";
+import { createMemoryBankMcpServer } from "../server.js";
 
 describe("Phase 5: The MCP (Model Context Protocol) Server", () => {
   it("executes store_decision tool and persists decision with vector embeddings", async () => {
-    const { handleToolCall } = createMemoryBusMcpServer();
+    const { handleToolCall } = createMemoryBankMcpServer();
 
     const storeResult = await handleToolCall("store_decision", {
       agent_id: "coder-agent-1",
@@ -17,7 +17,7 @@ describe("Phase 5: The MCP (Model Context Protocol) Server", () => {
   });
 
   it("executes retrieve_context tool and returns formatted Markdown context", async () => {
-    const { handleToolCall } = createMemoryBusMcpServer();
+    const { handleToolCall } = createMemoryBankMcpServer();
 
     // Store a decision first
     await handleToolCall("store_decision", {

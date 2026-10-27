@@ -86,7 +86,7 @@ export class ServiceContainer implements IContainer {
 }
 
 /**
- * Standard DI tokens for the Memory Bus infrastructure
+ * Standard DI tokens for the Memory Bank infrastructure
  */
 export const TOKENS = {
   Logger: createToken<ILogger>("ILogger"),
@@ -96,7 +96,7 @@ export const TOKENS = {
 } as const;
 
 export class ConsoleLogger implements ILogger {
-  constructor(private prefix = "[MemoryBus]") {}
+  constructor(private prefix = "[MemoryBank]") {}
 
   info(message: string, ...meta: unknown[]): void {
     console.log(`${this.prefix} [INFO] ${message}`, ...meta);

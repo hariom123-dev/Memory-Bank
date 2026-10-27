@@ -1,10 +1,10 @@
-# 🧠 Memory Bus (Agent Swarm OS)
+# 🧠 Memory Bank (Agent Swarm OS)
 
 **The infinite context and local memory layer for autonomous AI agents.**
 
-AI coding agents (Cursor, Cline, custom CLI agents) suffer from severe context decay. They forget the architectural decisions made on Day 1 by Day 3. **Memory Bus** is a local, OS-level background daemon that intercepts agent actions, parses their code into AST snapshots, and stores their reasoning in a hybrid SQLite/Vector database.
+AI coding agents (Cursor, Cline, custom CLI agents) suffer from severe context decay. They forget the architectural decisions made on Day 1 by Day 3. **Memory Bank** is a local, OS-level background daemon that intercepts agent actions, parses their code into AST snapshots, and stores their reasoning in a hybrid SQLite/Vector database.
 
-When an agent starts a new task, Memory Bus dynamically injects the exact historical context they need back into their prompt via the Model Context Protocol (MCP).
+When an agent starts a new task, Memory Bank dynamically injects the exact historical context they need back into their prompt via the Model Context Protocol (MCP).
 
 ---
 
@@ -13,16 +13,16 @@ When an agent starts a new task, Memory Bus dynamically injects the exact histor
 ### Global Installation & Run
 ```bash
 # 1. Install globally
-npm install -g memory-bus
+npm install -g memory-bank
 
 # 2. Start the background daemon in your repository
-memory-bus start --daemon
+memory-bank start --daemon
 
 # 3. Check daemon status
-memory-bus status
+memory-bank status
 
 # 4. Launch real-time Terminal UI monitor
-memory-bus monitor
+memory-bank monitor
 ```
 
 ### Local Development Setup
@@ -73,7 +73,7 @@ This is not a wrapper. It is a strictly typed, fault-tolerant memory orchestrato
 
 ## 🔌 Model Context Protocol (MCP) Integration
 
-Memory Bus exposes two native MCP tools for AI agents:
+Memory Bank exposes two native MCP tools for AI agents:
 - `store_decision`: Vectorizes reasoning, extracts AST snapshots, and commits memories to the graph.
 - `retrieve_context`: Queries semantic and lexical indexes, applying agent-specific weighting and branch isolation.
 
@@ -84,7 +84,7 @@ Add this configuration to your client's MCP configuration settings:
 ```json
 {
   "mcpServers": {
-    "memory-bus": {
+    "memory-bank": {
       "command": "node",
       "args": ["<PATH_TO_MEMORY_BANK>/dist/cli/index.js", "mcp"]
     }
@@ -97,13 +97,13 @@ Add this configuration to your client's MCP configuration settings:
 ## 💻 CLI Commands
 
 ```bash
-memory-bus start          # Start daemon in foreground
-memory-bus start --daemon # Start daemon as a detached background process
-memory-bus stop           # Gracefully terminate background daemon (commits pending transactions)
-memory-bus status         # Display whether daemon is active and PID
-memory-bus monitor        # Launch real-time Terminal UI monitor
-memory-bus mcp            # Launch MCP stdio server
-memory-bus version        # Print version
+memory-bank start          # Start daemon in foreground
+memory-bank start --daemon # Start daemon as a detached background process
+memory-bank stop           # Gracefully terminate background daemon (commits pending transactions)
+memory-bank status         # Display whether daemon is active and PID
+memory-bank monitor        # Launch real-time Terminal UI monitor
+memory-bank mcp            # Launch MCP stdio server
+memory-bank version        # Print version
 ```
 
 ---

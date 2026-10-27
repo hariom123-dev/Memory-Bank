@@ -1,4 +1,4 @@
--- Migration 001: Initial schema for Memory Bus
+-- Migration 001: Initial schema for Memory Bank
 CREATE TABLE IF NOT EXISTS Sessions (
   id TEXT PRIMARY KEY,
   agent_id TEXT NOT NULL,

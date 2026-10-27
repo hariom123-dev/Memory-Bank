@@ -1,5 +1,5 @@
 {
-  "name": "memory-bus",
+  "name": "memory-bank",
   "version": "0.1.0",
   "description": "Local Agent Swarm Operating System - Memory Orchestration Daemon",
   "type": "module",
@@ -7,7 +7,7 @@
     "node": ">=20.0.0"
   },
   "bin": {
-    "memory-bus": "./dist/cli/index.js"
+    "memory-bank": "./dist/cli/index.js"
   },
   "main": "./dist/index.js",
   "scripts": {

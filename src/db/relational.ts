@@ -45,7 +45,7 @@ export class MemoryRepository implements ITransactionalResource {
 
   constructor(options: RelationalDbOptions = {}) {
     this.logger = options.logger;
-    const dbPath = options.inMemory ? ":memory:" : options.dbPath ?? "memory-bus.sqlite";
+    const dbPath = options.inMemory ? ":memory:" : options.dbPath ?? "memory-bank.sqlite";
     this.db = new Database(dbPath);
 
     const busyTimeout = options.walBusyTimeoutMs ?? 5000;

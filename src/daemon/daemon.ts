@@ -16,7 +16,7 @@ export interface DaemonOptions {
   autoBindSignals?: boolean;
 }
 
-export class MemoryBusDaemon {
+export class MemoryBankDaemon {
   private container: IContainer;
   private actor: ActorRefFrom<typeof daemonMachine>;
   private shutdownManager: GracefulShutdownManager;
@@ -29,7 +29,7 @@ export class MemoryBusDaemon {
     this.autoBindSignals = options.autoBindSignals ?? false;
 
     this.config = {
-      name: "memory-bus-daemon",
+      name: "memory-bank-daemon",
       version: "0.1.0",
       shutdownTimeoutMs: 5000,
       logLevel: "info",
@@ -108,9 +108,9 @@ export class MemoryBusDaemon {
     }
 
     try {
-      this.logger.info(`Starting Memory Bus Daemon [${this.config.name} v${this.config.version}]...`);
+      this.logger.info(`Starting Memory Bank Daemon [${this.config.name} v${this.config.version}]...`);
       this.actor.send({ type: "INITIALIZE_SUCCESS" });
-      this.logger.info(`Memory Bus Daemon is now LISTENING.`);
+      this.logger.info(`Memory Bank Daemon is now LISTENING.`);
     } catch (err) {
       const errorMsg = err instanceof Error ? err.message : String(err);
       this.logger.error(`Failed to start daemon: ${errorMsg}`);
@@ -189,7 +189,7 @@ export class MemoryBusDaemon {
    * and releasing resources.
    */
   async stop(reason = "Explicit daemon stop"): Promise<ShutdownResult> {
-    this.logger.info(`Stopping Memory Bus Daemon [Reason: ${reason}]...`);
+    this.logger.info(`Stopping Memory Bank Daemon [Reason: ${reason}]...`);
     if (this.autoBindSignals) {
       this.shutdownManager.unbindProcessSignals();
     }
@@ -201,3 +201,5 @@ export class MemoryBusDaemon {
     return result;
   }
 }
+
+export { MemoryBankDaemon as MemoryBusDaemon };
