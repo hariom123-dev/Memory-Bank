@@ -3,12 +3,12 @@ import { execSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { TypedEventBus } from "../events/bus.js";
-import type { MemoryBusEventMap } from "../events/types.js";
+import type { MemoryBankEventMap } from "../events/types.js";
 import type { ILogger } from "../daemon/types.js";
 
 export interface WatcherOptions {
   workspacePath: string;
-  bus: TypedEventBus<MemoryBusEventMap>;
+  bus: TypedEventBus<MemoryBankEventMap>;
   debounceMs?: number;
   ignoredPatterns?: Array<string | RegExp>;
   logger?: ILogger;
@@ -16,7 +16,7 @@ export interface WatcherOptions {
 
 export class BackgroundInterceptor {
   private workspacePath: string;
-  private bus: TypedEventBus<MemoryBusEventMap>;
+  private bus: TypedEventBus<MemoryBankEventMap>;
   private debounceMs: number;
   private ignoredPatterns: Array<string | RegExp>;
   private logger?: ILogger | undefined;

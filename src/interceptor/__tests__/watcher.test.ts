@@ -1,20 +1,20 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { BackgroundInterceptor } from "../watcher.js";
 import { TypedEventBus } from "../../events/bus.js";
-import type { MemoryBusEventMap, FileChangedPayload } from "../../events/types.js";
+import type { MemoryBankEventMap, FileChangedPayload } from "../../events/types.js";
 import { writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
 describe("Phase 7: The Background Interceptor", () => {
   let tempDir: string;
-  let bus: TypedEventBus<MemoryBusEventMap>;
+  let bus: TypedEventBus<MemoryBankEventMap>;
   let interceptor: BackgroundInterceptor;
 
   beforeEach(() => {
     tempDir = join(tmpdir(), `mb-interceptor-${Date.now()}`);
     mkdirSync(tempDir, { recursive: true });
-    bus = new TypedEventBus<MemoryBusEventMap>();
+    bus = new TypedEventBus<MemoryBankEventMap>();
   });
 
   afterEach(async () => {

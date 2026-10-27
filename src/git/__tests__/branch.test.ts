@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { GitBranchManager } from "../branch-manager.js";
 import { TypedEventBus } from "../../events/bus.js";
-import type { MemoryBusEventMap, BranchChangedPayload } from "../../events/types.js";
+import type { MemoryBankEventMap, BranchChangedPayload } from "../../events/types.js";
 import { writeFileSync, mkdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -10,7 +10,7 @@ describe("Phase 13: Git-Branch Context Isolation", () => {
   let tempDir: string;
   let gitDir: string;
   let headFile: string;
-  let bus: TypedEventBus<MemoryBusEventMap>;
+  let bus: TypedEventBus<MemoryBankEventMap>;
   let manager: GitBranchManager;
 
   beforeEach(() => {
@@ -19,7 +19,7 @@ describe("Phase 13: Git-Branch Context Isolation", () => {
     headFile = join(gitDir, "HEAD");
     mkdirSync(gitDir, { recursive: true });
     writeFileSync(headFile, "ref: refs/heads/main\n");
-    bus = new TypedEventBus<MemoryBusEventMap>();
+    bus = new TypedEventBus<MemoryBankEventMap>();
     manager = new GitBranchManager({ workspaceRoot: tempDir, bus });
   });
 

@@ -2,14 +2,14 @@ import { describe, it, expect, vi } from "vitest";
 import { TypedEventBus } from "../bus.js";
 import {
   EVENT_SCHEMAS,
-  type MemoryBusEventMap,
+  type MemoryBankEventMap,
   type FileChangedPayload,
   type MemoryIngestedPayload,
 } from "../types.js";
 
 describe("TypedEventBus PubSub System", () => {
   it("publishes and receives strongly typed FILE_CHANGED events", async () => {
-    const bus = new TypedEventBus<MemoryBusEventMap>();
+    const bus = new TypedEventBus<MemoryBankEventMap>();
     const received: FileChangedPayload[] = [];
 
     bus.subscribe("FILE_CHANGED", (payload) => {
@@ -33,7 +33,7 @@ describe("TypedEventBus PubSub System", () => {
   });
 
   it("validates payloads using Zod schemas when configured", async () => {
-    const bus = new TypedEventBus<MemoryBusEventMap>({
+    const bus = new TypedEventBus<MemoryBankEventMap>({
       validatePayloads: true,
       schemas: EVENT_SCHEMAS,
     });
@@ -69,7 +69,7 @@ describe("TypedEventBus PubSub System", () => {
   });
 
   it("subscribes once and automatically unsubscribes", async () => {
-    const bus = new TypedEventBus<MemoryBusEventMap>();
+    const bus = new TypedEventBus<MemoryBankEventMap>();
     let count = 0;
 
     bus.subscribeOnce("CONTEXT_REQUESTED", () => {
@@ -97,7 +97,7 @@ describe("TypedEventBus PubSub System", () => {
   });
 
   it("receives all events through subscribeAll wildcard handler", async () => {
-    const bus = new TypedEventBus<MemoryBusEventMap>();
+    const bus = new TypedEventBus<MemoryBankEventMap>();
     const auditLog: Array<{ event: string; data: unknown }> = [];
 
     const unsubscribe = bus.subscribeAll((event, payload) => {
@@ -133,7 +133,7 @@ describe("TypedEventBus PubSub System", () => {
   });
 
   it("executes listeners in priority order", async () => {
-    const bus = new TypedEventBus<MemoryBusEventMap>();
+    const bus = new TypedEventBus<MemoryBankEventMap>();
     const order: string[] = [];
 
     bus.subscribe("FILE_CHANGED", () => { order.push("low"); }, { priority: 10 });
@@ -150,7 +150,7 @@ describe("TypedEventBus PubSub System", () => {
   });
 
   it("applies subscription filters", async () => {
-    const bus = new TypedEventBus<MemoryBusEventMap>();
+    const bus = new TypedEventBus<MemoryBankEventMap>();
     const received: string[] = [];
 
     bus.subscribe(
@@ -179,7 +179,7 @@ describe("TypedEventBus PubSub System", () => {
   });
 
   it("isolates errors across multiple subscribers", async () => {
-    const bus = new TypedEventBus<MemoryBusEventMap>();
+    const bus = new TypedEventBus<MemoryBankEventMap>();
     const executed: string[] = [];
 
     bus.subscribe("CRITICAL_ERROR", () => {

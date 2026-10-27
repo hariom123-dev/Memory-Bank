@@ -2,14 +2,14 @@ import { describe, it, expect, vi } from "vitest";
 import { TypedEventBus } from "../bus.js";
 import { DecoupledMemoryPipeline } from "../pipeline.js";
 import type {
-  MemoryBusEventMap,
+  MemoryBankEventMap,
   MemoryIngestedPayload,
   CriticalErrorPayload,
 } from "../types.js";
 
 describe("DecoupledMemoryPipeline", () => {
   it("processes FILE_CHANGED, extracts AST, and publishes MEMORY_INGESTED", async () => {
-    const bus = new TypedEventBus<MemoryBusEventMap>();
+    const bus = new TypedEventBus<MemoryBankEventMap>();
     const ingestedEvents: MemoryIngestedPayload[] = [];
     const storedMemories: MemoryIngestedPayload[] = [];
 
@@ -63,7 +63,7 @@ describe("DecoupledMemoryPipeline", () => {
   });
 
   it("publishes CRITICAL_ERROR if the AST processor throws an unexpected exception", async () => {
-    const bus = new TypedEventBus<MemoryBusEventMap>();
+    const bus = new TypedEventBus<MemoryBankEventMap>();
     const criticalErrors: CriticalErrorPayload[] = [];
 
     bus.subscribe("CRITICAL_ERROR", (err) => {
@@ -94,7 +94,7 @@ describe("DecoupledMemoryPipeline", () => {
   });
 
   it("ignores non-code files and file deletions (unlink)", async () => {
-    const bus = new TypedEventBus<MemoryBusEventMap>();
+    const bus = new TypedEventBus<MemoryBankEventMap>();
     const mockAstProcessor = vi.fn();
 
     const pipeline = new DecoupledMemoryPipeline({
@@ -124,7 +124,7 @@ describe("DecoupledMemoryPipeline", () => {
   });
 
   it("stops and detaches event listeners cleanly", async () => {
-    const bus = new TypedEventBus<MemoryBusEventMap>();
+    const bus = new TypedEventBus<MemoryBankEventMap>();
     const mockAstProcessor = vi.fn();
 
     const pipeline = new DecoupledMemoryPipeline({

@@ -1,6 +1,6 @@
 import type { TypedEventBus } from "../events/bus.js";
-import type { MemoryBusEventMap } from "../events/types.js";
-import type { MemoryBusDaemon } from "../daemon/daemon.js";
+import type { MemoryBankEventMap } from "../events/types.js";
+import type { MemoryBankDaemon } from "../daemon/daemon.js";
 import type { MemoryRepository } from "../db/relational.js";
 import { statSync, existsSync } from "node:fs";
 
@@ -13,8 +13,8 @@ export interface DashboardMetrics {
 }
 
 export interface TerminalMonitorOptions {
-  bus: TypedEventBus<MemoryBusEventMap>;
-  daemon?: MemoryBusDaemon;
+  bus: TypedEventBus<MemoryBankEventMap>;
+  daemon?: MemoryBankDaemon;
   repository?: MemoryRepository;
   dbPath?: string;
   maxEvents?: number;
@@ -22,8 +22,8 @@ export interface TerminalMonitorOptions {
 }
 
 export class TerminalMonitorDashboard {
-  private bus: TypedEventBus<MemoryBusEventMap>;
-  private daemon?: MemoryBusDaemon | undefined;
+  private bus: TypedEventBus<MemoryBankEventMap>;
+  private daemon?: MemoryBankDaemon | undefined;
   private repository?: MemoryRepository | undefined;
   private dbPath?: string | undefined;
   private maxEvents: number;

@@ -1,16 +1,16 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { TerminalMonitorDashboard } from "../monitor.js";
 import { TypedEventBus } from "../../events/bus.js";
-import type { MemoryBusEventMap } from "../../events/types.js";
+import type { MemoryBankEventMap } from "../../events/types.js";
 import { MemoryRepository } from "../../db/relational.js";
 
 describe("Phase 10: The Local Terminal UI (TUI) Monitor", () => {
-  let bus: TypedEventBus<MemoryBusEventMap>;
+  let bus: TypedEventBus<MemoryBankEventMap>;
   let repo: MemoryRepository;
   let monitor: TerminalMonitorDashboard;
 
   beforeEach(() => {
-    bus = new TypedEventBus<MemoryBusEventMap>();
+    bus = new TypedEventBus<MemoryBankEventMap>();
     repo = new MemoryRepository({ inMemory: true });
     monitor = new TerminalMonitorDashboard({
       bus,

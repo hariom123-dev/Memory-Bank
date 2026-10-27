@@ -1,6 +1,6 @@
 import type { TypedEventBus } from "./bus.js";
 import type {
-  MemoryBusEventMap,
+  MemoryBankEventMap,
   FileChangedPayload,
   MemoryIngestedPayload,
 } from "./types.js";
@@ -28,7 +28,7 @@ export type StorageHandler = (
 ) => Promise<void> | void;
 
 export interface PipelineOptions {
-  bus: TypedEventBus<MemoryBusEventMap>;
+  bus: TypedEventBus<MemoryBankEventMap>;
   astProcessor: AstProcessor;
   vectorProcessor?: VectorProcessor;
   storageHandler?: StorageHandler;
@@ -37,7 +37,7 @@ export interface PipelineOptions {
 }
 
 export class DecoupledMemoryPipeline {
-  private bus: TypedEventBus<MemoryBusEventMap>;
+  private bus: TypedEventBus<MemoryBankEventMap>;
   private astProcessor: AstProcessor;
   private vectorProcessor?: VectorProcessor | undefined;
   private storageHandler?: StorageHandler | undefined;

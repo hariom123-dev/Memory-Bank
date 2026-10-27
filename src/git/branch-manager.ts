@@ -1,19 +1,19 @@
 import { existsSync, readFileSync, watch, type FSWatcher } from "node:fs";
 import { join } from "node:path";
 import type { TypedEventBus } from "../events/bus.js";
-import type { MemoryBusEventMap } from "../events/types.js";
+import type { MemoryBankEventMap } from "../events/types.js";
 import type { ILogger } from "../daemon/types.js";
 
 export interface BranchManagerOptions {
   workspaceRoot: string;
-  bus: TypedEventBus<MemoryBusEventMap>;
+  bus: TypedEventBus<MemoryBankEventMap>;
   logger?: ILogger;
   defaultBranch?: string;
 }
 
 export class GitBranchManager {
   private workspaceRoot: string;
-  private bus: TypedEventBus<MemoryBusEventMap>;
+  private bus: TypedEventBus<MemoryBankEventMap>;
   private logger?: ILogger | undefined;
   private currentBranch: string;
   private watcher: FSWatcher | null = null;

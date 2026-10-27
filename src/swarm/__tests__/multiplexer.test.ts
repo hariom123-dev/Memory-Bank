@@ -11,7 +11,7 @@ describe("Phase 11: Multi-Agent Session Multiplexer", () => {
   let multiplexer: MultiAgentMultiplexer;
 
   beforeEach(() => {
-    tempDir = mkdtempSync(join(tmpdir(), "memory-bus-swarm-"));
+    tempDir = mkdtempSync(join(tmpdir(), "memory-bank-swarm-"));
     dbPath = join(tempDir, "swarm-test.sqlite");
     multiplexer = new MultiAgentMultiplexer({ dbPath, inMemory: false });
   });
