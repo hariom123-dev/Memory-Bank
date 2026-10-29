@@ -139,10 +139,11 @@ export function createMemoryBankMcpServer(options: McpServerOptions = {}): {
       // 1. Embed query
       const queryEmbedding = await vectorEngine.embed(query);
 
-      // 2. Retrieve weighted context
+      // 2. Retrieve weighted context (dense EpochSummaries first, granular decisions from last 24h)
       const result = multiplexer.retrieveWeightedContext(
         { agentId, query, limit },
-        queryEmbedding
+        queryEmbedding,
+        { recentWindowMs: 24 * 60 * 60 * 1000 }
       );
 
       return {

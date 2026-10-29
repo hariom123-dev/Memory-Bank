@@ -1,6 +1,7 @@
 import Database, { type Database as BetterSqliteDatabase } from "better-sqlite3";
 import type { ITransactionalResource, ILogger } from "../daemon/types.js";
 import { MigrationRunner } from "./migrations/runner.js";
+import type { EpochSummaryEntity } from "./summarizer.js";
 
 export interface SessionEntity {
   id: string;
@@ -100,6 +101,30 @@ export class MemoryRepository implements ITransactionalResource {
           CREATE INDEX IF NOT EXISTS idx_decisions_created ON ArchitecturalDecisions(created_at);
           CREATE INDEX IF NOT EXISTS idx_snapshots_decision ON CodeSnapshots(decision_id);
           CREATE INDEX IF NOT EXISTS idx_snapshots_filepath ON CodeSnapshots(file_path);
+        `,
+      },
+      {
+        version: 2,
+        name: "002_epoch_summaries.sql",
+        sql: `
+          CREATE TABLE IF NOT EXISTS EpochSummaries (
+            id TEXT PRIMARY KEY,
+            session_id TEXT NOT NULL,
+            agent_id TEXT NOT NULL,
+            summary TEXT NOT NULL,
+            key_decisions TEXT NOT NULL,
+            impacted_files TEXT NOT NULL,
+            decision_count INTEGER NOT NULL,
+            first_decision_at INTEGER NOT NULL,
+            last_decision_at INTEGER NOT NULL,
+            embedding TEXT,
+            created_at INTEGER NOT NULL,
+            FOREIGN KEY (session_id) REFERENCES Sessions(id) ON DELETE CASCADE
+          );
+
+          CREATE INDEX IF NOT EXISTS idx_epoch_summaries_session ON EpochSummaries(session_id);
+          CREATE INDEX IF NOT EXISTS idx_epoch_summaries_agent ON EpochSummaries(agent_id);
+          CREATE INDEX IF NOT EXISTS idx_epoch_summaries_created ON EpochSummaries(created_at);
         `,
       },
     ]);
@@ -435,6 +460,154 @@ export class MemoryRepository implements ITransactionalResource {
       filePaths,
       ...(embedding ? { embedding } : {}),
       branchName: row.branch_name,
+      createdAt: row.created_at,
+    };
+  }
+
+  // --- EPOCH SUMMARIES ---
+  insertEpochSummary(epoch: EpochSummaryEntity): EpochSummaryEntity {
+    this.db
+      .prepare<[string, string, string, string, string, string, number, number, number, string | null, number]>(
+        `INSERT INTO EpochSummaries
+         (id, session_id, agent_id, summary, key_decisions, impacted_files, decision_count, first_decision_at, last_decision_at, embedding, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      )
+      .run(
+        epoch.id,
+        epoch.sessionId,
+        epoch.agentId,
+        epoch.summary,
+        JSON.stringify(epoch.keyDecisions),
+        JSON.stringify(epoch.impactedFiles),
+        epoch.decisionCount,
+        epoch.firstDecisionAt,
+        epoch.lastDecisionAt,
+        epoch.embedding ? JSON.stringify(epoch.embedding) : null,
+        epoch.createdAt
+      );
+
+    return epoch;
+  }
+
+  findEpochSummariesBySession(sessionId: string): EpochSummaryEntity[] {
+    interface RawEpochRow {
+      id: string;
+      session_id: string;
+      agent_id: string;
+      summary: string;
+      key_decisions: string;
+      impacted_files: string;
+      decision_count: number;
+      first_decision_at: number;
+      last_decision_at: number;
+      embedding: string | null;
+      created_at: number;
+    }
+
+    const rows = this.db
+      .prepare<[string]>("SELECT * FROM EpochSummaries WHERE session_id = ? ORDER BY created_at DESC")
+      .all(sessionId) as RawEpochRow[];
+
+    return rows.map((r) => this.mapEpochRow(r));
+  }
+
+  findAllEpochSummaries(): EpochSummaryEntity[] {
+    interface RawEpochRow {
+      id: string;
+      session_id: string;
+      agent_id: string;
+      summary: string;
+      key_decisions: string;
+      impacted_files: string;
+      decision_count: number;
+      first_decision_at: number;
+      last_decision_at: number;
+      embedding: string | null;
+      created_at: number;
+    }
+
+    const rows = this.db
+      .prepare<[]>("SELECT * FROM EpochSummaries ORDER BY created_at DESC")
+      .all() as RawEpochRow[];
+
+    return rows.map((r) => this.mapEpochRow(r));
+  }
+
+  findEpochSummaryById(id: string): EpochSummaryEntity | null {
+    interface RawEpochRow {
+      id: string;
+      session_id: string;
+      agent_id: string;
+      summary: string;
+      key_decisions: string;
+      impacted_files: string;
+      decision_count: number;
+      first_decision_at: number;
+      last_decision_at: number;
+      embedding: string | null;
+      created_at: number;
+    }
+
+    const row = this.db
+      .prepare<[string]>("SELECT * FROM EpochSummaries WHERE id = ?")
+      .get(id) as RawEpochRow | undefined;
+
+    if (!row) return null;
+    return this.mapEpochRow(row);
+  }
+
+  deleteEpochSummary(id: string): boolean {
+    const res = this.db.prepare<[string]>("DELETE FROM EpochSummaries WHERE id = ?").run(id);
+    return res.changes > 0;
+  }
+
+  private mapEpochRow(row: {
+    id: string;
+    session_id: string;
+    agent_id: string;
+    summary: string;
+    key_decisions: string;
+    impacted_files: string;
+    decision_count: number;
+    first_decision_at: number;
+    last_decision_at: number;
+    embedding: string | null;
+    created_at: number;
+  }): EpochSummaryEntity {
+    let keyDecisions: string[] = [];
+    try {
+      keyDecisions = JSON.parse(row.key_decisions) as string[];
+    } catch {
+      keyDecisions = [row.key_decisions];
+    }
+
+    let impactedFiles: string[] = [];
+    try {
+      impactedFiles = JSON.parse(row.impacted_files) as string[];
+    } catch {
+      impactedFiles = [row.impacted_files];
+    }
+
+    let embedding: number[] | undefined;
+    if (row.embedding) {
+      try {
+        embedding = JSON.parse(row.embedding) as number[];
+      } catch {
+        // ignore
+      }
+    }
+
+    return {
+      id: row.id,
+      sessionId: row.session_id,
+      agentId: row.agent_id,
+      summary: row.summary,
+      keyDecisions,
+      impactedFiles,
+      decisionCount: row.decision_count,
+      firstDecisionAt: row.first_decision_at,
+      lastDecisionAt: row.last_decision_at,
+      ...(embedding ? { embedding } : {}),
       createdAt: row.created_at,
     };
   }

@@ -6,4 +6,5 @@
 export * from "./relational.js";
 export * from "./vector.js";
 export * from "./gc.js";
+export * from "./summarizer.js";
 export * from "./migrations/runner.js";

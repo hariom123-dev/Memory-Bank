@@ -10,6 +10,7 @@ import type {
   MultiplexerConfig,
 } from "./types.js";
 import type { ILogger, ITransactionalResource } from "../daemon/types.js";
+import type { EpochSummaryEntity } from "../db/summarizer.js";
 
 function cosineSimilarity(vecA: number[], vecB: number[]): number {
   if (vecA.length !== vecB.length || vecA.length === 0) return 0;
@@ -194,14 +195,20 @@ export class MultiAgentMultiplexer implements ITransactionalResource {
   /**
    * Retrieves context heavily weighting decisions made by the requesting agent,
    * while incorporating read-only, lower-weighted context from other swarm agents.
+   * Injects dense EpochSummary memories first, and uses granular ArchitecturalDecisions
+   * for the last 24 hours of work.
    */
   retrieveWeightedContext(
     params: RetrieveContextParams,
-    queryEmbedding?: number[]
+    queryEmbedding?: number[],
+    options?: { recentWindowMs?: number; now?: number }
   ): MultiplexedContextResult {
     const { agentId, query, limit } = params;
     const maxResults = limit ?? this.config.maxResults;
     const rawDb = this.db.getRawDatabase();
+
+    // 1. Query dense EpochSummary memories
+    const epochSummaries = this.getEpochSummaries(params.sessionId);
 
     interface RawDecisionRow {
       id: string;
@@ -224,9 +231,19 @@ export class MultiAgentMultiplexer implements ITransactionalResource {
       )
       .all() as RawDecisionRow[];
 
+    // 2. Only use granular ArchitecturalDecisions for the last 24 hours of work when epoch memories exist or filtering is active
+    const recentWindowMs = options?.recentWindowMs ?? 24 * 60 * 60 * 1000;
+    const now = options?.now ?? Date.now();
+    const cutoff = now - recentWindowMs;
+
+    const candidateRows =
+      epochSummaries.length > 0 || options?.recentWindowMs !== undefined
+        ? rows.filter((r) => r.created_at >= cutoff)
+        : rows;
+
     const scoredDecisions: WeightedDecision[] = [];
 
-    for (const row of rows) {
+    for (const row of candidateRows) {
       const isOwnDecision = row.agent_id === agentId;
       const weight = isOwnDecision ? this.config.ownAgentWeight : this.config.peerAgentWeight;
 
@@ -284,8 +301,8 @@ export class MultiAgentMultiplexer implements ITransactionalResource {
     scoredDecisions.sort((a, b) => b.weightedScore - a.weightedScore);
     const topResults = scoredDecisions.slice(0, maxResults);
 
-    // Format Markdown summary
-    const markdownSummary = this.formatContextMarkdown(agentId, query, topResults);
+    // Format Markdown summary: injects dense EpochSummaries first!
+    const markdownSummary = this.formatContextMarkdown(agentId, query, topResults, epochSummaries);
 
     return {
       requestingAgentId: agentId,
@@ -347,16 +364,104 @@ export class MultiAgentMultiplexer implements ITransactionalResource {
     }));
   }
 
+  /**
+   * Retrieves all EpochSummaries for a session or across all sessions.
+   */
+  getEpochSummaries(sessionId?: string): EpochSummaryEntity[] {
+    const rawDb = this.db.getRawDatabase();
+    interface RawEpochRow {
+      id: string;
+      session_id: string;
+      agent_id: string;
+      summary: string;
+      key_decisions: string;
+      impacted_files: string;
+      decision_count: number;
+      first_decision_at: number;
+      last_decision_at: number;
+      embedding: string | null;
+      created_at: number;
+    }
+
+    let rows: RawEpochRow[];
+    try {
+      if (sessionId) {
+        rows = rawDb
+          .prepare<[string]>("SELECT * FROM EpochSummaries WHERE session_id = ? ORDER BY created_at DESC")
+          .all(sessionId) as RawEpochRow[];
+      } else {
+        rows = rawDb
+          .prepare<[]>("SELECT * FROM EpochSummaries ORDER BY created_at DESC")
+          .all() as RawEpochRow[];
+      }
+    } catch {
+      return [];
+    }
+
+    return rows.map((r) => {
+      let keyDecisions: string[] = [];
+      try {
+        keyDecisions = JSON.parse(r.key_decisions) as string[];
+      } catch {
+        keyDecisions = [r.key_decisions];
+      }
+
+      let impactedFiles: string[] = [];
+      try {
+        impactedFiles = JSON.parse(r.impacted_files) as string[];
+      } catch {
+        impactedFiles = [r.impacted_files];
+      }
+
+      let embedding: number[] | undefined;
+      if (r.embedding) {
+        try {
+          embedding = JSON.parse(r.embedding) as number[];
+        } catch {
+          // ignore
+        }
+      }
+
+      return {
+        id: r.id,
+        sessionId: r.session_id,
+        agentId: r.agent_id,
+        summary: r.summary,
+        keyDecisions,
+        impactedFiles,
+        decisionCount: r.decision_count,
+        firstDecisionAt: r.first_decision_at,
+        lastDecisionAt: r.last_decision_at,
+        ...(embedding ? { embedding } : {}),
+        createdAt: r.created_at,
+      };
+    });
+  }
+
   private formatContextMarkdown(
     agentId: string,
     query: string,
-    results: WeightedDecision[]
+    results: WeightedDecision[],
+    epochSummaries: EpochSummaryEntity[] = []
   ): string {
     const lines: string[] = [
       `# Swarm Memory Context [Query: "${query}"]`,
       `**Requesting Agent:** \`${agentId}\` | **Matches Retrieved:** ${results.length}`,
       "",
     ];
+
+    // INJECT DENSE EPOCH SUMMARIES FIRST!
+    if (epochSummaries.length > 0) {
+      lines.push("## Dense Epoch Summaries (Historical Memory)");
+      for (const ep of epochSummaries) {
+        const timeframe = `${new Date(ep.firstDecisionAt).toLocaleDateString()} - ${new Date(ep.lastDecisionAt).toLocaleDateString()}`;
+        lines.push(`### [EPOCH: ${ep.sessionId}] ${ep.decisionCount} Decisions (${timeframe})`);
+        lines.push(`- **Agent:** \`${ep.agentId}\` | **Decisions Compressed:** ${ep.decisionCount}`);
+        lines.push(`- **Summary:** ${ep.summary}`);
+        lines.push(`- **Impacted Files:** ${ep.impactedFiles.map((f) => `\`${f}\``).join(", ") || "None"}`);
+        lines.push("");
+      }
+    }
 
     const primaryDecisions = results.filter((r) => r.attribution === "primary");
     const peerDecisions = results.filter((r) => r.attribution === "peer");
@@ -383,7 +488,7 @@ export class MultiAgentMultiplexer implements ITransactionalResource {
       }
     }
 
-    if (results.length === 0) {
+    if (results.length === 0 && epochSummaries.length === 0) {
       lines.push("*No matching architectural decisions found.*");
     }
 
