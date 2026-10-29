@@ -5,3 +5,4 @@
 
 export * from "./monitor.js";
 export * from "./daemonize.js";
+export * from "./healthcheck.js";

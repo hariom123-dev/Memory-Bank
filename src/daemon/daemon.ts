@@ -2,6 +2,7 @@ import { createActor, type ActorRefFrom } from "xstate";
 import { daemonMachine } from "./lifecycle.machine.js";
 import { ServiceContainer, TOKENS, ConsoleLogger, type IContainer } from "./container.js";
 import { GracefulShutdownManager } from "./shutdown.js";
+import { validateEnv } from "../config/env.js";
 import type {
   DaemonState,
   DaemonConfig,
@@ -25,14 +26,17 @@ export class MemoryBankDaemon {
   private autoBindSignals: boolean;
 
   constructor(options: DaemonOptions = {}) {
+    // Validate environment variables prior to booting XState machine
+    const envConfig = validateEnv();
+
     this.container = options.container ?? new ServiceContainer();
     this.autoBindSignals = options.autoBindSignals ?? false;
 
     this.config = {
       name: "memory-bank-daemon",
       version: "0.1.0",
-      shutdownTimeoutMs: 5000,
-      logLevel: "info",
+      shutdownTimeoutMs: envConfig.MEMORY_BANK_SHUTDOWN_TIMEOUT_MS,
+      logLevel: envConfig.LOG_LEVEL,
       ...options.config,
     };
 

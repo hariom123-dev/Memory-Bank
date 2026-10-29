@@ -1,5 +1,7 @@
 import Database from "better-sqlite3";
 import type { Database as BetterSqliteDatabase } from "better-sqlite3";
+import { existsSync, mkdirSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import type { ITransactionalResource } from "../daemon/types.js";
 
 export interface DatabaseOptions {
@@ -18,7 +20,16 @@ export class SwarmDatabase implements ITransactionalResource {
     if (options.existingDb) {
       this.db = options.existingDb;
     } else {
-      const dbPath = options.inMemory ? ":memory:" : options.dbPath ?? "memory-bank.sqlite";
+      const rawPath = options.inMemory ? ":memory:" : options.dbPath ?? "memory-bank.sqlite";
+      const dbPath = rawPath === ":memory:" ? ":memory:" : resolve(rawPath);
+
+      if (dbPath !== ":memory:") {
+        const parentDir = dirname(dbPath);
+        if (!existsSync(parentDir)) {
+          mkdirSync(parentDir, { recursive: true });
+        }
+      }
+
       this.db = new Database(dbPath);
     }
 

@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync, unlinkSync, mkdirSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, resolve } from "node:path";
 import { homedir } from "node:os";
 
 export interface DaemonizeOptions {
@@ -11,8 +11,9 @@ export class DaemonProcessManager {
   private pidFilePath: string;
 
   constructor(options: DaemonizeOptions = {}) {
-    this.pidFilePath =
-      options.pidFilePath ?? join(homedir(), ".memory-bank", "daemon.pid");
+    this.pidFilePath = options.pidFilePath
+      ? resolve(options.pidFilePath)
+      : resolve(homedir(), ".memory-bank", "daemon.pid");
   }
 
   getPidFilePath(): string {
@@ -84,7 +85,8 @@ export class DaemonProcessManager {
       return { pid: existingPid, status: "already_running" };
     }
 
-    const child = spawn(process.execPath, [entryScript, ...args], {
+    const scriptPath = resolve(entryScript);
+    const child = spawn(process.execPath, [scriptPath, ...args], {
       detached: true,
       stdio: "ignore",
       env: process.env,

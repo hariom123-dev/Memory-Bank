@@ -1,7 +1,7 @@
 import { watch, type FSWatcher } from "chokidar";
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { relative, resolve } from "node:path";
 import type { TypedEventBus } from "../events/bus.js";
 import type { MemoryBankEventMap } from "../events/types.js";
 import type { ILogger } from "../daemon/types.js";
@@ -129,7 +129,8 @@ export class BackgroundInterceptor {
 
   private extractGitDiff(filePath: string): string | undefined {
     try {
-      const output = execSync(`git diff HEAD -- "${filePath}"`, {
+      const relPath = relative(this.workspacePath, filePath);
+      const output = execFileSync("git", ["diff", "HEAD", "--", relPath], {
         cwd: this.workspacePath,
         encoding: "utf-8",
         stdio: ["ignore", "pipe", "ignore"],

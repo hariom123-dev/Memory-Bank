@@ -1,5 +1,5 @@
-import { existsSync, readFileSync, watch, type FSWatcher } from "node:fs";
-import { join } from "node:path";
+import { existsSync, readFileSync, statSync, watch, type FSWatcher } from "node:fs";
+import { isAbsolute, join, resolve } from "node:path";
 import type { TypedEventBus } from "../events/bus.js";
 import type { MemoryBankEventMap } from "../events/types.js";
 import type { ILogger } from "../daemon/types.js";
@@ -20,11 +20,47 @@ export class GitBranchManager {
   private gitHeadPath: string;
 
   constructor(options: BranchManagerOptions) {
-    this.workspaceRoot = options.workspaceRoot;
+    this.workspaceRoot = resolve(options.workspaceRoot);
     this.bus = options.bus;
     this.logger = options.logger;
-    this.gitHeadPath = join(this.workspaceRoot, ".git", "HEAD");
+
+    const paths = this.resolveGitPaths();
+    this.gitHeadPath = paths ? paths.headPath : join(this.workspaceRoot, ".git", "HEAD");
     this.currentBranch = this.detectCurrentBranch(options.defaultBranch ?? "main");
+  }
+
+  private resolveGitPaths(): { gitDir: string; headPath: string } | null {
+    const rawGitPath = join(this.workspaceRoot, ".git");
+    if (!existsSync(rawGitPath)) {
+      return null;
+    }
+
+    try {
+      const stat = statSync(rawGitPath);
+      if (stat.isDirectory()) {
+        return {
+          gitDir: rawGitPath,
+          headPath: join(rawGitPath, "HEAD"),
+        };
+      } else if (stat.isFile()) {
+        const content = readFileSync(rawGitPath, "utf-8").trim();
+        if (content.startsWith("gitdir:")) {
+          const rawDir = content.replace("gitdir:", "").trim();
+          const targetDir = isAbsolute(rawDir) ? rawDir : resolve(this.workspaceRoot, rawDir);
+          return {
+            gitDir: targetDir,
+            headPath: join(targetDir, "HEAD"),
+          };
+        }
+      }
+    } catch {
+      // Fallback
+    }
+
+    return {
+      gitDir: rawGitPath,
+      headPath: join(rawGitPath, "HEAD"),
+    };
   }
 
   getCurrentBranch(): string {
@@ -32,12 +68,15 @@ export class GitBranchManager {
   }
 
   detectCurrentBranch(fallback = "main"): string {
-    if (!existsSync(this.gitHeadPath)) {
+    const paths = this.resolveGitPaths();
+    const headPath = paths?.headPath ?? this.gitHeadPath;
+
+    if (!existsSync(headPath)) {
       return fallback;
     }
 
     try {
-      const content = readFileSync(this.gitHeadPath, "utf-8").trim();
+      const content = readFileSync(headPath, "utf-8").trim();
       if (content.startsWith("ref: refs/heads/")) {
         return content.replace("ref: refs/heads/", "");
       }
@@ -54,19 +93,19 @@ export class GitBranchManager {
       return this;
     }
 
-    const gitDir = join(this.workspaceRoot, ".git");
-    if (!existsSync(gitDir)) {
+    const paths = this.resolveGitPaths();
+    if (!paths || !existsSync(paths.gitDir)) {
       this.logger?.info("No .git directory found; branch manager running in static mode.");
       return this;
     }
 
     try {
-      this.watcher = watch(gitDir, (eventType, filename) => {
+      this.watcher = watch(paths.gitDir, (eventType, filename) => {
         if (filename === "HEAD" || eventType === "rename") {
           this.checkBranchChange();
         }
       });
-      this.logger?.info(`GitBranchManager watching ${this.gitHeadPath} (current: ${this.currentBranch})`);
+      this.logger?.info(`GitBranchManager watching ${paths.headPath} (current: ${this.currentBranch})`);
     } catch (err) {
       this.logger?.warn("Failed to watch .git directory:", err);
     }

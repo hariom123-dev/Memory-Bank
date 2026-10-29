@@ -1,4 +1,6 @@
 import Database, { type Database as BetterSqliteDatabase } from "better-sqlite3";
+import { existsSync, mkdirSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 import type { ITransactionalResource, ILogger } from "../daemon/types.js";
 import { MigrationRunner } from "./migrations/runner.js";
 import type { EpochSummaryEntity } from "./summarizer.js";
@@ -46,7 +48,16 @@ export class MemoryRepository implements ITransactionalResource {
 
   constructor(options: RelationalDbOptions = {}) {
     this.logger = options.logger;
-    const dbPath = options.inMemory ? ":memory:" : options.dbPath ?? "memory-bank.sqlite";
+    const rawPath = options.inMemory ? ":memory:" : options.dbPath ?? "memory-bank.sqlite";
+    const dbPath = rawPath === ":memory:" ? ":memory:" : resolve(rawPath);
+
+    if (dbPath !== ":memory:") {
+      const parentDir = dirname(dbPath);
+      if (!existsSync(parentDir)) {
+        mkdirSync(parentDir, { recursive: true });
+      }
+    }
+
     this.db = new Database(dbPath);
 
     const busyTimeout = options.walBusyTimeoutMs ?? 5000;

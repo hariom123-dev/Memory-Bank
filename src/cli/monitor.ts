@@ -3,6 +3,7 @@ import type { MemoryBankEventMap } from "../events/types.js";
 import type { MemoryBankDaemon } from "../daemon/daemon.js";
 import type { MemoryRepository } from "../db/relational.js";
 import { statSync, existsSync } from "node:fs";
+import { resolve } from "node:path";
 
 export interface DashboardMetrics {
   daemonState: string;
@@ -36,7 +37,7 @@ export class TerminalMonitorDashboard {
     this.bus = options.bus;
     this.daemon = options.daemon;
     this.repository = options.repository;
-    this.dbPath = options.dbPath;
+    this.dbPath = options.dbPath ? resolve(options.dbPath) : undefined;
     this.maxEvents = options.maxEvents ?? 10;
     this.refreshIntervalMs = options.refreshIntervalMs ?? 1000;
   }

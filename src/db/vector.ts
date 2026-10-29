@@ -43,16 +43,52 @@ export class VectorEmbeddingEngine {
     }
 
     this.pipelinePromise = (async () => {
+      let spinner: {
+        text: string;
+        succeed: (text?: string) => void;
+        warn: (text?: string) => void;
+        fail: (text?: string) => void;
+        stop: () => void;
+      } | null = null;
+      const downloadMessage = "Downloading local vector model (first run only)...";
+
       try {
-        this.logger?.info(`Loading local vector model '${this.modelName}' asynchronously...`);
+        if (process.stdout && process.stdout.isTTY) {
+          try {
+            const oraModule = await import("ora");
+            const ora = oraModule.default;
+            spinner = ora({
+              text: downloadMessage,
+              color: "cyan",
+            }).start();
+          } catch {
+            this.logger?.info(downloadMessage);
+          }
+        } else {
+          this.logger?.info(downloadMessage);
+        }
+
         const { pipeline } = await import("@xenova/transformers");
         const pipe = await pipeline("feature-extraction", this.modelName, {
           quantized: this.quantized,
+          progress_callback: (progress: { status?: string; progress?: number; file?: string }) => {
+            if (spinner && progress.status === "progress" && typeof progress.progress === "number") {
+              const pct = Math.round(progress.progress);
+              spinner.text = `Downloading local vector model (first run only)... ${pct}%`;
+            }
+          },
         });
+
+        if (spinner) {
+          spinner.succeed(`Local vector model '${this.modelName}' ready.`);
+        }
         this.isLoaded = true;
         this.logger?.info(`Vector model '${this.modelName}' loaded and ready.`);
         return pipe;
       } catch (err) {
+        if (spinner) {
+          spinner.warn("Local vector model download skipped, using deterministic mock fallback.");
+        }
         this.logger?.warn("Failed to load local transformers model, enabling deterministic mock fallback:", err);
         this.useMockFallback = true;
         this.isLoaded = true;

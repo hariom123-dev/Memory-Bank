@@ -13,3 +13,4 @@ export * from "./hydration/index.js";
 export * from "./swarm/index.js";
 export * from "./git/index.js";
 export * from "./cli/index.js";
+export * from "./config/env.js";

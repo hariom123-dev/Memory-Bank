@@ -3,6 +3,7 @@ import { defineConfig } from "tsup";
 export default defineConfig({
   entry: {
     "cli/index": "src/cli/entry.ts",
+    "cli/healthcheck": "src/cli/healthcheck.ts",
     index: "src/index.ts",
   },
   format: ["esm"],
